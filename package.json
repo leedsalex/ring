@@ -1,8 +1,9 @@
 {
-  "name": "ring-client-api",
+  "name": "@koush/ring-client-api",
   "version": "10.0.0-beta.0",
   "description": "Unofficial API for Ring doorbells, cameras, security alarm system and smart lighting",
   "main": "lib/api/index.js",
+  "module": "lib-esnext/api/index.js",
   "bin": {
     "ring-auth-cli": "ring-auth-cli.js",
     "ring-device-data-cli": "ring-device-data-cli.js"
@@ -13,7 +14,7 @@
     "test": "jest && eslint '**/*.ts'",
     "watch:tests": "jest --watch",
     "lint": "eslint '**/*.ts' --fix",
-    "build": "rm -rf lib && tsc --declaration",
+    "build": "rm -rf lib && tsc --declaration && rm -rf lib-esnext && tsc -p tsconfig.esnext.json --declaration",
     "build-quick": "rm -rf lib && esbuild ./{api,examples,homebridge}/*.ts ./api/*.js --target=es2017 --format=cjs --outdir=lib",
     "example": "npm run build-quick && node ./lib/examples/example.js",
     "api-example": "npm run build-quick && node ./lib/examples/api-example.js",
