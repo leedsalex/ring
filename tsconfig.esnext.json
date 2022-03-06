@@ -1,12 +1,6 @@
 {
   "compilerOptions": {
     "target":"esnext",
-    "lib": [
-      "es5",
-      "es2015",
-      "es2017",
-      "dom"
-    ],
     "module": "commonjs",
     "outDir": "./lib-esnext",
     "esModuleInterop": true,
