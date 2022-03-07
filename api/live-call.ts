@@ -16,7 +16,6 @@ import {
   OfferMessage,
   CloseMessage,
 } from './live-call-negotiation'
-import { firstValueFrom } from 'rxjs'
 import { FfmpegOptions, SpawnInput } from './ffmpeg-options'
 
 export class LiveCall extends LiveCallNegotiation {

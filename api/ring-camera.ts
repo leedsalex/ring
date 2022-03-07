@@ -27,7 +27,6 @@ import {
 } from 'rxjs/operators'
 import { DeepPartial, delay, logDebug, logError } from './util'
 import { Subscribed } from './subscribed'
-import { LiveCall } from './live-call'
 import { FfmpegOptions } from './ffmpeg-options'
 import { generateSrtpOptions, getDefaultIpAddress, reservePorts, SrtpOptions } from '@homebridge/camera-utils'
 import dgram from 'dgram';
@@ -390,8 +389,9 @@ export class RingCamera extends Subscribed {
     }
   }
 
-  async startLiveCall() {
-    return new LiveCall(await this.startLiveCallNegotiation(), this)
+  async startLiveCall(): Promise<any> {
+    throw new Error('commented out @koush')
+    // return new LiveCall(await this.startLiveCallNegotiation(), this)
   }
 
   private removeDingById(idToRemove: string) {
@@ -692,17 +692,19 @@ export class RingCamera extends Subscribed {
     )
   }
   async recordToFile(outputPath: string, duration = 30) {
-    const liveCall = await this.streamVideo({
-      output: ['-t', duration.toString(), outputPath],
-    })
+    throw new Error('commented out @koush')
+    // const liveCall = await this.streamVideo({
+    //   output: ['-t', duration.toString(), outputPath],
+    // })
 
-    await firstValueFrom(liveCall.onCallEnded)
+    // await firstValueFrom(liveCall.onCallEnded)
   }
 
-  async streamVideo(ffmpegOptions: FfmpegOptions) {
-    const liveCall = await this.startLiveCall()
-    await liveCall.startTranscoding(ffmpegOptions)
-    return liveCall
+  async streamVideo(ffmpegOptions: FfmpegOptions): Promise<any> {
+    throw new Error('commented out @koush')
+    // const liveCall = await this.startLiveCall()
+    // await liveCall.startTranscoding(ffmpegOptions)
+    // return liveCall
   }
 
   async startWebRtcSession(session_uuid: string, sdp: string): Promise<string> {
