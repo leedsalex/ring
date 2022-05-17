@@ -65,9 +65,7 @@ export class SipSession extends Subscribed {
     }
 
     try {
-      const videoPort = await this.reservePort(1),
-        audioPort = await this.reservePort(1),
-        rtpDescription = await this.sipCall.invite(),
+      const rtpDescription = await this.sipCall.invite(),
         sendStunRequests = () => {
           sendStunBindingRequest({
             rtpSplitter: this.audioSplitter,

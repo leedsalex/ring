@@ -110,6 +110,7 @@ function parseRtpDescription(inviteResponse: {
     cLine = lines.find((line: string) => line.startsWith('c='))!
 
   return {
+    sdp: inviteResponse.content,
     address: cLine.match(/c=IN IP4 (\S*)/)![1],
     audio: getRtpDescription(sections, 'audio'),
     video: getRtpDescription(sections, 'video'),

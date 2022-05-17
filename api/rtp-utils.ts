@@ -26,6 +26,7 @@ export interface RtpDescription {
   address: string
   audio: RtpStreamDescription
   video: RtpStreamDescription
+  sdp: string
 }
 
 export function isStunMessage(message: Buffer) {

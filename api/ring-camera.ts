@@ -105,6 +105,7 @@ export async function bindUdp(server: dgram.Socket, usePort: number) {
     // address: '0.0.0.0',
   });
   await once(server, 'listening');
+  server.setRecvBufferSize(1024 * 1024);
   const port = server.address().port;
   return {
       port,
