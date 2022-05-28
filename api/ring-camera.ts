@@ -141,7 +141,8 @@ export class RingCamera extends Subscribed {
     private initialData: CameraData,
     public isDoorbot: boolean,
     private restClient: RingRestClient,
-    private avoidSnapshotBatteryDrain: boolean
+    private avoidSnapshotBatteryDrain: boolean,
+    private streamingConnectionOptions: StreamingConnectionOptions
   ) {
     super()
 
@@ -362,8 +363,8 @@ export class RingCamera extends Subscribed {
     return new WebrtcConnection(liveCall.data.session_id, this, options)
   }
 
-  async startLiveCall(options: StreamingConnectionOptions = {}) {
-    const connection = await this.createStreamingConnection(options)
+  async startLiveCall(options?: StreamingConnectionOptions) {
+    const connection = await this.createStreamingConnection(options || this.streamingConnectionOptions)
     return new StreamingSession(this, connection)
   }
 
