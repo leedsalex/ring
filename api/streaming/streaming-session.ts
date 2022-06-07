@@ -10,7 +10,7 @@ import { WebrtcConnection } from './webrtc-connection'
 import { getFfmpegPath } from '../ffmpeg'
 import { logDebug, logError } from '../util'
 import { RingCamera } from '../ring-camera'
-import { concatMap } from 'rxjs/operators'
+import { concatMap, take } from 'rxjs/operators'
 import { Subscribed } from '../subscribed'
 
 type SpawnInput = string | number
@@ -98,8 +98,17 @@ export class StreamingSession extends Subscribed {
     const videoPort = await this.reservePort(1),
       audioPort = await this.reservePort(1),
       transcodeVideoStream = ffmpegOptions.video !== false,
-      ringSdp = await firstValueFrom(this.connection.onCallAnswered),
-      usingOpus = await this.isUsingOpus,
+      ringSdp = await Promise.race([
+        firstValueFrom(this.connection.onCallAnswered),
+        firstValueFrom(this.onCallEnded),
+      ])
+
+    if (!ringSdp) {
+      logDebug('Call ended before answered')
+      return
+    }
+
+    const usingOpus = await this.isUsingOpus,
       ffmpegInputArguments = [
         '-hide_banner',
         '-protocol_whitelist',
@@ -158,7 +167,7 @@ export class StreamingSession extends Subscribed {
       )
     }
 
-    this.onCallEnded.subscribe(() => ff.stop())
+    this.onCallEnded.pipe(take(1)).subscribe(() => ff.stop())
 
     ff.writeStdin(inputSdp)
 
@@ -202,7 +211,7 @@ export class StreamingSession extends Subscribed {
           info: logDebug,
         },
       })
-    this.onCallEnded.subscribe(() => ff.stop())
+    this.onCallEnded.pipe(take(1)).subscribe(() => ff.stop())
   }
 
   private hasEnded = false

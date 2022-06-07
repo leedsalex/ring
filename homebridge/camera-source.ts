@@ -256,7 +256,7 @@ class StreamingSessionWrapper {
       returnAudioTranscodedSplitter = new RtpSplitter(({ message }) => {
         if (!cameraSpeakerActive) {
           cameraSpeakerActive = true
-          this.streamingSession.activateCameraSpeaker()
+          this.streamingSession.setCameraSpeaker(true)
         }
 
         // decrypt the message

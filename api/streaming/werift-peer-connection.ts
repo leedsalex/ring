@@ -1,29 +1,41 @@
 /* eslint-disable brace-style */
 import {
-    ConnectionState,
-    MediaStreamTrack,
-    RTCIceCandidate,
-    RTCPeerConnection,
-    RtcpPacket,
-    RTCRtpCodecParameters,
-    RtpPacket,
-  } from 'werift'
-import { interval, merge, ReplaySubject, Subject } from 'rxjs'
-import { logError, logInfo } from '../util'
+  ConnectionState, RtpPacket, RtcpPacket, RTCRtpCodecParameters, RTCPeerConnection, MediaStreamTrack, RTCIceCandidate
+} from 'werift'
+import { interval, merge, Observable, ReplaySubject, Subject } from 'rxjs'
+import { logDebug, logError, logInfo } from '../util'
 import { Subscribed } from '../subscribed'
-import { BasicPeerConnection } from './peer-connection'
-  
-const debug = false,
-  ringIceServers = [
-    'stun:stun.kinesisvideo.us-east-1.amazonaws.com:443',
-    'stun:stun.kinesisvideo.us-east-2.amazonaws.com:443',
-    'stun:stun.kinesisvideo.us-west-2.amazonaws.com:443',
-    'stun:stun.l.google.com:19302',
-    'stun:stun1.l.google.com:19302',
-    'stun:stun2.l.google.com:19302',
-    'stun:stun3.l.google.com:19302',
-    'stun:stun4.l.google.com:19302',
-  ]
+
+const ringIceServers = [
+  'stun:stun.kinesisvideo.us-east-1.amazonaws.com:443',
+  'stun:stun.kinesisvideo.us-east-2.amazonaws.com:443',
+  'stun:stun.kinesisvideo.us-west-2.amazonaws.com:443',
+  'stun:stun.l.google.com:19302',
+  'stun:stun1.l.google.com:19302',
+  'stun:stun2.l.google.com:19302',
+  'stun:stun3.l.google.com:19302',
+  'stun:stun4.l.google.com:19302',
+]
+
+export interface BasicPeerConnection {
+  onAudioRtp?: Subject<RtpPacket>
+  onVideoRtp?: Subject<RtpPacket>
+
+  createOffer(): Promise<{ sdp: string }>
+  createAnswer(offer: {
+    type: 'offer'
+    sdp: string
+  }): Promise<RTCSessionDescriptionInit>
+  acceptAnswer(answer: { type: 'answer'; sdp: string }): Promise<void>
+  addIceCandidate(candidate: RTCIceCandidateInit): Promise<void>
+  onIceCandidate: Observable<RTCIceCandidateInit>
+  onConnectionState: Observable<ConnectionState>
+  close(): void
+  requestKeyFrame?: () => void
+  sendAudioPacket?: (rtp: RtpPacket|Buffer) => void
+  addIceCandidate(candidate: Partial<RTCIceCandidate>): Promise<void>
+  close(): void
+}
 
 export class WeriftPeerConnection
   extends Subscribed
@@ -34,7 +46,7 @@ export class WeriftPeerConnection
   onAudioRtcp = new Subject<RtcpPacket>()
   onVideoRtp = new Subject<RtpPacket>()
   onVideoRtcp = new Subject<RtcpPacket>()
-  onIceCandidate = new Subject<RTCIceCandidateInit>()
+  onIceCandidate = new Subject<RTCIceCandidate>()
   onConnectionState = new ReplaySubject<ConnectionState>(1)
   returnAudioTrack = new MediaStreamTrack({ kind: 'audio' })
   private onRequestKeyFrame = new Subject<void>()
@@ -74,6 +86,7 @@ export class WeriftPeerConnection
         },
         iceServers: ringIceServers.map((server) => ({ urls: server })),
         iceTransportPolicy: 'all',
+        bundlePolicy: 'disable',
       })),
       audioTransceiver = pc.addTransceiver(this.returnAudioTrack, {
         direction: 'sendrecv',
@@ -91,11 +104,9 @@ export class WeriftPeerConnection
         this.onAudioRtcp.next(rtcp)
       })
 
-      if (debug) {
-        track.onReceiveRtp.once(() => {
-          logInfo('received first audio packet')
-        })
-      }
+      track.onReceiveRtp.once(() => {
+        logDebug('received first audio packet')
+      })
     })
 
     videoTransceiver.onTrack.subscribe((track) => {
@@ -108,9 +119,7 @@ export class WeriftPeerConnection
       })
 
       track.onReceiveRtp.once(() => {
-        if (debug) {
-          logInfo('received first video packet')
-        }
+        logDebug('received first video packet')
 
         this.addSubscriptions(
           merge(this.onRequestKeyFrame, interval(4000)).subscribe(() => {
@@ -168,7 +177,7 @@ export class WeriftPeerConnection
   }
 
   sendAudioPacket(rtp: RtpPacket | Buffer): void {
-      this.returnAudioTrack.writeRtp(rtp)
+    this.returnAudioTrack.writeRtp(rtp)
   }
 
   close() {

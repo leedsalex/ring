@@ -34,7 +34,7 @@ async function example() {
       input: [path.join(path.resolve('examples'), 'example.mp4')],
     }),
     // We need to manually tell the speaker to activate when we are ready to play audio out of the speaker
-    call.activateCameraSpeaker(),
+    call.setCameraSpeaker(true),
   ])
 
   setTimeout(() => {
