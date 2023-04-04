@@ -201,6 +201,7 @@ export class RingRestClient {
         },
         method: 'POST',
         headers: {
+          'User-Agent': 'Ring/6.9.0 (Nokia; Nokia 6.1; Android 9)',
           '2fa-support': 'true',
           '2fa-code': twoFactorAuthCode || '',
           hardware_id: await this.hardwareIdPromise,
